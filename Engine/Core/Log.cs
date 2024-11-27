@@ -9,25 +9,30 @@ namespace SaturnEngine.Engine.Core
         public static bool ConsoleOutput { get; set; } = true;
         public static bool FileOutput { get; set; } = false;
 
+        private static ConsoleColor _debugColor = ConsoleColor.DarkGray;
+        private static ConsoleColor _infoColor = ConsoleColor.White;
+        private static ConsoleColor _warningColor = ConsoleColor.DarkYellow;
+        private static ConsoleColor _errorColor = ConsoleColor.Red;
+
         #region Debug
 
         public static void Debug(string msg)
         {
-            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.ForegroundColor = _debugColor;
             Write(msg);
             Console.ResetColor();
         }
 
         public static void Debug(Entity entity, string msg)
         {
-            Console.ForegroundColor = ConsoleColor.DarkGray;
-            Write($"[Entity \"{entity.Name}\"({entity.Id})] {msg}");
+            Console.ForegroundColor = _debugColor;
+            Write($"Entity \"{entity.Name}\" ({entity.Id}): {msg}");
             Console.ResetColor();
         }
 
         public static void Debug(ComponentBase component, string msg)
         {
-            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.ForegroundColor = _debugColor;
             Write($"[Entity \"{component.Entity.Name}\"({component.Entity.Id}), Component \"{component.GetType()}\"] {msg}");
             Console.ResetColor();
         }
@@ -38,8 +43,15 @@ namespace SaturnEngine.Engine.Core
 
         public static void Info(string msg)
         {
-            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.ForegroundColor = _infoColor;
             Write(msg);
+            Console.ResetColor();
+        }
+
+        public static void Info(Entity entity, string msg)
+        {
+            Console.ForegroundColor = _infoColor;
+            Write($"Entity \"{entity.Name}\" ({entity.Id}): {msg}");
             Console.ResetColor();
         }
 
@@ -49,21 +61,21 @@ namespace SaturnEngine.Engine.Core
 
         public static void Warning(string msg)
         {
-            Console.ForegroundColor = ConsoleColor.DarkYellow;
+            Console.ForegroundColor = _warningColor;
             Write(msg);
             Console.ResetColor();
         }
 
         public static void Warning(Entity entity, string msg)
         {
-            Console.ForegroundColor = ConsoleColor.DarkYellow;
-            Write($"[Entity \"{entity.Name}\"({entity.Id})] {msg}");
+            Console.ForegroundColor = _warningColor;
+            Write($"Entity \"{entity.Name}\" ({entity.Id}): {msg}");
             Console.ResetColor();
         }
 
         public static void Warning(ComponentBase component, string msg)
         {
-            Console.ForegroundColor = ConsoleColor.DarkYellow;
+            Console.ForegroundColor = _warningColor;
             Write($"[Entity \"{component.Entity.Name}\"({component.Entity.Id}), Component \"{component.GetType()}\"] {msg}");
             Console.ResetColor();
         }
@@ -74,21 +86,21 @@ namespace SaturnEngine.Engine.Core
 
         public static void Error(string msg)
         {
-            Console.ForegroundColor = ConsoleColor.Red;
+            Console.ForegroundColor = _errorColor;
             Write(msg);
             Console.ResetColor();
         }
 
         public static void Error(Entity entity, string msg)
         {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Write($"[Entity \"{entity.Name}\"({entity.Id})] {msg}");
+            Console.ForegroundColor = _errorColor;
+            Write($"Entity \"{entity.Name}\" ({entity.Id}): {msg}");
             Console.ResetColor();
         }
 
         public static void Error(ComponentBase component, string msg)
         {
-            Console.ForegroundColor = ConsoleColor.Red;
+            Console.ForegroundColor = _errorColor;
             Write($"[Entity \"{component.Entity.Name}\"({component.Entity.Id}), Component \"{component.GetType()}\"] {msg}");
             Console.ResetColor();
         }

@@ -23,15 +23,6 @@ namespace SaturnEngine.Engine.Structs
         public static readonly Color Green = new Color(0x00, 0xFF, 0x00, 0xFF);
         public static readonly Color Blue = new Color(0x00, 0x00, 0xFF, 0xFF);
         public static readonly Color Yellow = new Color(0xFF, 0xFF, 0x00, 0xFF);
-        public static readonly Color Cyan = new Color(0x00, 0xFF, 0xFF, 0xFF);
-        public static readonly Color Magenta = new Color(0xFF, 0x00, 0xFF, 0xFF);
-        public static readonly Color Gray = new Color(0x80, 0x80, 0x80, 0xFF);
-        public static readonly Color LightGray = new Color(0xD3, 0xD3, 0xD3, 0xFF);
-        public static readonly Color DarkGray = new Color(0xA9, 0xA9, 0xA9, 0xFF);
-        public static readonly Color Orange = new Color(0xFF, 0xA5, 0x00, 0xFF);
-        public static readonly Color Purple = new Color(0x80, 0x00, 0x80, 0xFF);
-        public static readonly Color Brown = new Color(0xA5, 0x2A, 0x2A, 0xFF);
-        public static readonly Color Pink = new Color(0xFF, 0xC0, 0xCB, 0xFF);
 
         #endregion
 
@@ -42,6 +33,20 @@ namespace SaturnEngine.Engine.Structs
             B = b;
             A = a;
         }
+
+        #region operators
+
+        public static bool operator==(Color c1, Color c2)
+        {
+            return c1.R == c2.R && c1.G == c2.G && c1.B == c2.B && c1.A == c2.A;
+        }
+
+        public static bool operator !=(Color c1, Color c2)
+        {
+            return !(c1 == c2);
+        }
+
+        #endregion
 
         public SDL.SDL_Color ToSDL_Color()
         {

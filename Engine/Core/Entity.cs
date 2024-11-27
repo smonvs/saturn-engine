@@ -49,6 +49,8 @@ namespace SaturnEngine.Engine.Core
             entity.Id = _lastId++;
             entity.Name = name;
 
+            Log.Info(entity, "Entity was created");
+
             entity.Transform = entity.AddComponent<Transform>();
 
             return entity;
@@ -67,11 +69,14 @@ namespace SaturnEngine.Engine.Core
         public void Destroy()
         {
             OnEntityDestroyed?.Invoke(this); 
+            Log.Info(this, "Entity was destroyed");
         }
 
         internal void OnAddedToScene(Scene scene)
         {
             Scene = scene;
+
+            Log.Info(this, $"Entity was added to scene \"{scene.Name}\"");
 
             foreach (ComponentBase component in _components.Values)
             {
@@ -91,23 +96,23 @@ namespace SaturnEngine.Engine.Core
 
         public T AddComponent<T>() where T : ComponentBase, new()
         {
-            T component = GetComponent<T>();
-
-            if (component == null)
+            if (!HasComponent<T>())
             { 
                 Type type = typeof(T);
 
-                component = new T();
+                T component = new T();
                 component.Entity = this;
                 _components.Add(type, component);
                 component.OnInit();
 
                 OnComponentAdded?.Invoke(this, component);
 
+                Log.Info(this, $"Component \"{type}\" was added");
+
                 if (Scene != null) component.OnStart();
             }
 
-            return component;
+            return GetComponent<T>();
         }
 
         public T GetComponent<T>() where T : ComponentBase
@@ -120,6 +125,7 @@ namespace SaturnEngine.Engine.Core
             }
             else
             {
+                Log.Warning(this, $"Component \"{type}\" not found");
                 return null;
             }
         }
@@ -148,6 +154,8 @@ namespace SaturnEngine.Engine.Core
             }
 
             entity.Parent = this;
+        
+            Log.Info(this, $"Entity \"{entity.Name}\" was added as child");
         }
 
         public void RemoveChild(Entity entity)
@@ -162,6 +170,7 @@ namespace SaturnEngine.Engine.Core
                 Entity child = _children.ElementAt(index);
                 child.Parent = null;
                 _children.Remove(child.Id);
+                Log.Info(this, $"Entity \"{child.Name}\" was removed from children");
             }
             else
             {
@@ -176,6 +185,7 @@ namespace SaturnEngine.Engine.Core
                 Entity child = _children[id];
                 child.Parent = null;
                 _children.Remove(id);
+                Log.Info(this, $"Entity \"{child.Name}\" was removed from children");
             }
             else
             {

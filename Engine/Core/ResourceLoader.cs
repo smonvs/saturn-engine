@@ -1,11 +1,8 @@
 ﻿using SaturnEngine.Engine.Structs;
-using System;
-using System.Collections.Generic;
-using System.Data;
+using System.ComponentModel;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Reflection;
+using System.Xml.Linq;
 
 namespace SaturnEngine.Engine.Core
 {
@@ -35,7 +32,10 @@ namespace SaturnEngine.Engine.Core
                 switch (fileExtension)
                 {
                     case ".obj":
-                        resource = LoadObj(filepath, new StreamReader(filepath));
+                        using (StreamReader streamReader = new StreamReader(filepath))
+                        {
+                            resource = LoadObj(filepath, streamReader);
+                        }
                         break;
                     default:
                         Log.Error($"ResourceLoader: File at filepath \"{filepath}\" could not be loaded. Reason: Filetype \"{fileExtension}\" not supported");
@@ -43,7 +43,91 @@ namespace SaturnEngine.Engine.Core
                 }
 
                 _resources.Add(resource);
+                Log.Info($"ResourceLoader: File at filepath \"{filepath}\" was loaded");
                 return TryReturnFile<T>(resource);
+            }
+        }
+
+        internal static Scene LoadScene(string filepath)
+        {
+            filepath = filepath.Replace("\\", "/").ToLower();
+
+            Dictionary<uint, string> resourcePaths = new Dictionary<uint, string>();
+            Dictionary<uint, Entity> entitiesTemp = new Dictionary<uint, Entity>();
+
+            if (File.Exists(filepath))
+            {
+                try
+                {
+                    XDocument doc = XDocument.Load(filepath);
+
+                    XElement scene = doc.Element("scene");
+                    if(scene != null)
+                    {
+                        Scene result = new Scene(scene.Attribute("name")?.Value);
+
+                        IEnumerable<XElement> resources = scene.Element("resource")?.Elements("Resource");
+                        if(resources != null)
+                        {
+                            foreach (XElement resource in resources)
+                            {
+                                resourcePaths.Add(uint.Parse(resource.Attribute("id")?.Value), resource.Value);
+                            }
+                        }
+
+                        IEnumerable<XElement> entities = scene.Element("entities")?.Elements("Entity");
+                        if(entities != null)
+                        {
+                            Entity newEntity;
+
+                            foreach (XElement entity in entities)
+                            {
+                                newEntity = Entity.Create(entity.Attribute("name")?.Value);
+                                if(entity.Attribute("isEnabled")?.Value == "false") newEntity.Disable();
+
+                                IEnumerable<XElement> components = entity.Elements("Component");
+                                if(components != null)
+                                {
+                                    foreach(XElement component in components)
+                                    {
+                                        Type type = Type.GetType(component.Attribute("type")?.Value);
+
+
+
+                                        try
+                                        {
+
+                                        }
+                                        catch
+                                        {
+                                            throw new Exception("Component could not be parsed");
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    throw new Exception("Entity had no components");
+                                }
+                            }
+                        }
+
+                        return result;
+                    }
+                    else
+                    {
+                        throw new Exception("Scene could not be parsed");
+                    }
+                }
+                catch(Exception e)
+                {
+                    Log.Error($"ResourceLoader: Scene at filepath \"{filepath}\" could not be loaded. Reason: Parsing error; {e.Message}");
+                    return null;
+                }
+            }
+            else
+            {
+                Log.Error($"ResourceLoader: Scene at filepath \"{filepath}\" could not be loaded. Reason: File not found");
+                return null;
             }
         }
 

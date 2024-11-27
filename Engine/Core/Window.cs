@@ -70,6 +70,11 @@ namespace SaturnEngine.Engine.Core
             return true;
         }
 
+        internal void ShowFpsInTitle(int fps, int frametime)
+        {
+            SDL.SDL_SetWindowTitle(_sdlWindow, $"{_title} - {fps} fps, {frametime} ms");
+        }
+
         internal IntPtr GetRenderer()
         {
             return _sdlRenderer;
@@ -94,11 +99,15 @@ namespace SaturnEngine.Engine.Core
             }
         }
 
+        internal void Clear()
+        {
+            SDL.SDL_SetRenderDrawColor(_sdlRenderer, 0x00, 0x00, 0x00, 0xFF);
+            SDL.SDL_RenderClear(_sdlRenderer);
+        }
+
         internal void Draw()
         {
             SDL.SDL_RenderPresent(_sdlRenderer);
-            SDL.SDL_SetRenderDrawColor(_sdlRenderer, 0x00, 0x00, 0x00, 0xFF);
-            SDL.SDL_RenderClear(_sdlRenderer);
         }
 
     }

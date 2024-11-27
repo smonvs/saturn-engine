@@ -123,6 +123,7 @@ namespace SaturnEngine.Engine.Structs
 
             Vector3 a = newForward * Vector3.Dot(up, newForward);
             Vector3 newUp = up - a;
+            newUp.Normalize();
 
             Vector3 newRight = Vector3.Cross(newUp, newForward);
 

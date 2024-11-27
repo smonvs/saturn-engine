@@ -47,6 +47,8 @@ namespace SaturnEngine.Engine.Core
 
             Stopwatch stopwatch = new Stopwatch();
             float deltaTime = 0.0f;
+            float elapsedTime = 0.0f;
+            int frameCount = 0;
 
             while (Running)
             {
@@ -56,16 +58,27 @@ namespace SaturnEngine.Engine.Core
                 _window.ProcessMessages();
 
                 _sceneManager.UpdateScenes(deltaTime);
-                //Log.Info(deltaTime.ToString());
+
+                _window.Clear();
+
                 _renderer3DSystem.Update();
 
                 _window.Draw();
 
-                SDL.SDL_Delay(1000 / 30);
+                //SDL.SDL_Delay(1000 / 144);
 
                 stopwatch.Stop();
                 deltaTime = stopwatch.ElapsedMilliseconds / 1000.0f;
+                elapsedTime += deltaTime;
+                frameCount++;
                 stopwatch.Reset();
+
+                if(elapsedTime >= 1.0f)
+                {
+                    _window.ShowFpsInTitle((int)(frameCount / elapsedTime), (int)(deltaTime * 1000));
+                    frameCount = 0;
+                    elapsedTime -= 1.0f;
+                }
             }
 
             OnClose?.Invoke();

@@ -27,6 +27,11 @@ namespace SaturnEngine.Engine.Core
         public void AddEntity(Entity entity)
         {
             _addedCache.Add(entity);
+
+            foreach (Entity child in entity.GetChildren())
+            {
+                if(!_entities.Contains(child)) AddEntity(child);
+            }
         }
 
         private void AddEntityFromCache(Entity entity)

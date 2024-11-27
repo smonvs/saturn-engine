@@ -109,5 +109,20 @@ namespace SaturnEngine.Engine.Structs
             );
         }
 
+        public static Vector3 IntersectPlane(ref readonly Vector3 planeP, Vector3 planeN, ref readonly Vector3 lineStart, ref readonly Vector3 lineEnd)
+        {
+            planeN.Normalize();
+            
+            float planeD = -Dot(planeN, planeP);
+            float ad = Dot(lineStart, planeN);
+            float bd = Dot(lineEnd, planeN);
+            float t = (-planeD - ad) / (bd - ad);
+
+            Vector3 lineStartToEnd = lineEnd - lineStart;
+            Vector3 lineToIntersect = lineStartToEnd * t;
+
+            return lineStart + lineToIntersect;
+        }
+
     }
 }
