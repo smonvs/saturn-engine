@@ -63,6 +63,8 @@ namespace SaturnEngine.Engine.Core
 
             _renderer3DSystem = new Renderer3DSystem(_window.GetRenderer());
 
+            Graphics.Init(_window.GetRenderer());
+
             OnLoad?.Invoke(_sceneManager);
 
             Stopwatch stopwatch = new Stopwatch();

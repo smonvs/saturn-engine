@@ -31,7 +31,7 @@ namespace SaturnEngine.Engine.Structs
             M = new float[4, 4];
         }
 
-        public static Vector3 MultiplyVector(Matrix4x4 m, Vector3 v)
+        public static Vector3 operator*(Matrix4x4 m, Vector3 v)
         {
             Vector3 vector = new Vector3();
             vector.X = v.X * m.M[0, 0] + v.Y * m.M[1, 0] + v.Z * m.M[2, 0] + v.W * m.M[3, 0];
@@ -41,7 +41,7 @@ namespace SaturnEngine.Engine.Structs
             return vector;
         }
         
-        public static Matrix4x4 MultiplyMatrix(Matrix4x4 m1, Matrix4x4 m2)
+        public static Matrix4x4 operator*(Matrix4x4 m1, Matrix4x4 m2)
         {
             Matrix4x4 matrix = new Matrix4x4();
             for(int c = 0; c < 4; c++)
