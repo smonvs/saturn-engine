@@ -8,14 +8,16 @@ namespace SaturnEngine.Engine.Structs
 
         #region Statics
 
-        public static Vector3 Zero { get { return new Vector3(0, 0, 0); } }
+        public static readonly Vector3 Zero = new Vector3(0, 0, 0);
+        public static readonly Vector3 Up = new Vector3(0, -1, 0);
+        public static readonly Vector3 Down = new Vector3(0, 1, 0);
 
         #endregion
 
         public float X { get; set; }
         public float Y { get; set; }
         public float Z { get; set; }
-        public float W { get; set; }
+        internal float W { get; set; }
 
         public float Length { get { return MathF.Sqrt(Dot(this, this)); } }
 
@@ -34,7 +36,7 @@ namespace SaturnEngine.Engine.Structs
             Z = z;
             W = 1;
         }
-        public Vector3(float x, float y, float z, float w)
+        internal Vector3(float x, float y, float z, float w)
         {
             X = x;
             Y = y;
@@ -62,6 +64,11 @@ namespace SaturnEngine.Engine.Structs
         public static Vector3 operator -(Vector3 v, float f)
         {
             return new Vector3(v.X - f, v.Y - f, v.Z - f);
+        }
+
+        public static Vector3 operator -(Vector3 v)
+        {
+            return new Vector3(-v.X, -v.Y, -v.Z);
         }
 
         public static Vector3 operator *(Vector3 v1, Vector3 v2)
@@ -109,14 +116,14 @@ namespace SaturnEngine.Engine.Structs
             );
         }
 
-        public static Vector3 IntersectPlane(ref readonly Vector3 planeP, Vector3 planeN, ref readonly Vector3 lineStart, ref readonly Vector3 lineEnd)
+        public static Vector3 IntersectPlane(ref readonly Vector3 planeP, Vector3 planeN, ref readonly Vector3 lineStart, ref readonly Vector3 lineEnd, ref float t)
         {
             planeN.Normalize();
             
             float planeD = -Dot(planeN, planeP);
             float ad = Dot(lineStart, planeN);
             float bd = Dot(lineEnd, planeN);
-            float t = (-planeD - ad) / (bd - ad);
+            t = (-planeD - ad) / (bd - ad);
 
             Vector3 lineStartToEnd = lineEnd - lineStart;
             Vector3 lineToIntersect = lineStartToEnd * t;

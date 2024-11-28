@@ -2,6 +2,7 @@
 using SaturnEngine.Engine.Systems;
 using System.Diagnostics;
 using SDL2;
+using System.Runtime.InteropServices;
 
 namespace SaturnEngine.Engine.Core
 {
@@ -29,12 +30,31 @@ namespace SaturnEngine.Engine.Core
 
         #endregion
 
+        #region Release
+
+        #if DEBUG
+        #else
+        [DllImport("kernel32.dll")]
+        private static extern IntPtr GetConsoleWindow();
+
+        [DllImport("user32.dll")]
+        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+        #endif
+
+        #endregion
+
         public Application(string title, int width, int height)
         {
             _window = new Window(this, title, width, height);
             _sceneManager = new SceneManager();
             _sceneManager.OnEntityDestroyed += OnEntityDestroyed;
             _sceneManager.OnComponentAdded += OnComponentAdded;
+            
+            // Hide Console window if not in debug mode
+            #if DEBUG
+            #else
+            ShowWindow(GetConsoleWindow(), 0);
+            #endif
         }
 
         public void Run()

@@ -25,6 +25,7 @@ namespace SaturnEngine.Engine.Core
 
         internal Window(Application application, string title, int width, int height)
         {
+            _application = application;
             _size = new Vector2(width, height);
             _title = title;
             Window.Size = _size;
@@ -66,6 +67,8 @@ namespace SaturnEngine.Engine.Core
                 SDL.SDL_DestroyWindow(_sdlWindow);
                 return false;
             }
+
+            SDL.SDL_GL_SetSwapInterval(1);
 
             return true;
         }

@@ -111,7 +111,9 @@ namespace SaturnEngine.Engine.Core
         {
             if (ConsoleOutput)
             {
+                #if DEBUG
                 Console.WriteLine($"[{DateTime.Now}] {msg}");
+                #endif
             }
 
             if (FileOutput)

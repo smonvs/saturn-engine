@@ -71,8 +71,8 @@ namespace SaturnEngine.Engine.Structs
             Matrix4x4 matrix = new Matrix4x4();
             matrix.M[0, 0] = MathF.Cos(fAngleRad);
             matrix.M[0, 2] = MathF.Sin(fAngleRad);
-            matrix.M[2, 0] = -MathF.Sin(fAngleRad);
             matrix.M[1, 1] = 1.0f;
+            matrix.M[2, 0] = -MathF.Sin(fAngleRad);
             matrix.M[2, 2] = MathF.Cos(fAngleRad);
             matrix.M[3, 3] = 1.0f;
             return matrix;

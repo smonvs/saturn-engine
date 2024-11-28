@@ -3,10 +3,10 @@
     public struct Quaternion
     {
 
-        public float X { get; set; }
-        public float Y { get; set; }
-        public float Z { get; set; }
-        public float W { get; set; }
+        public float X { get; private set; }
+        public float Y { get; private set; }
+        public float Z { get; private set; }
+        public float W { get; private set; }
 
         public Quaternion()
         {
@@ -57,23 +57,26 @@
         {
             Vector3 angles = new Vector3();
 
-            float sinz_cosp = 2 * (W * X + Y * Z);
-            float cosz_cosp = 1 - 2 * (X * X + Y * Y);
-            angles.Z = MathF.Atan2(sinz_cosp, cosz_cosp);
+            // roll (x-axis rotation)
+            double sinr_cosp = 2 * (W * X + Y * Z);
+            double cosr_cosp = 1 - 2 * (X * X + Y * Y);
+            angles.X = (float)Math.Atan2(sinr_cosp, cosr_cosp);
 
-            float sinx = 2 * (W * Y - Z * X);
-            if(Math.Abs(sinx) >= 1)
+            // pitch (y-axis rotation)
+            double sinp = 2 * (W * Y - Z * X);
+            if (Math.Abs(sinp) >= 1)
             {
-                angles.X = MathF.PI / 2 * Math.Sign(sinx);
+                angles.Y = (float)Math.CopySign(Math.PI / 2, sinp);
             }
             else
             {
-                angles.X = MathF.Asin(sinx);
+                angles.Y = (float)Math.Asin(sinp);
             }
 
-            float siny_cosp = 2 * (W * Z + X * Y);
-            float cosy_cosp = 1 - 2 * (Y * Y + Z * Z);
-            angles.Y = MathF.Atan2(siny_cosp, cosy_cosp);
+            // yaw (z-axis rotation)
+            double siny_cosp = 2 * (W * Z + X * Y);
+            double cosy_cosp = 1 - 2 * (Y * Y + Z * Z);
+            angles.Z = (float)Math.Atan2(siny_cosp, cosy_cosp);
 
             return angles;
         }

@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SaturnEngine.Engine.Components;
-using SDL2;
+﻿using SaturnEngine.Engine.Components;
+using SaturnEngine.Engine.Core;
+using SaturnEngine.Engine.Structs;
 
 using SDL_Renderer = nint;
 
@@ -22,9 +18,16 @@ namespace SaturnEngine.Engine.Systems
 
         protected internal override void Update()
         {
-            foreach (Renderer3D component in _cache.Values)
+            Camera3D camera = Camera3D.Main;
+
+            if(camera != null)
             {
-                if (component.IsEnabled) component.OnRender(_renderer);
+                Matrix4x4 projectionMatrix = Matrix4x4.MakeProjection(camera.FieldOfView, Window.Size.Y / Window.Size.X, 0.1f, 1000.0f);
+
+                foreach (Renderer3D component in _cache.Values)
+                {
+                    if (component.IsEnabled) component.OnRender(_renderer, projectionMatrix, camera);
+                }
             }
         }
 

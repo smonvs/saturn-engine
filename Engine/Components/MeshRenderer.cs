@@ -10,6 +10,7 @@ using SaturnEngine.Engine.Structs;
 using SDL2;
 
 using SDL_Renderer = nint;
+using SDL_Texture = nint;
 
 namespace SaturnEngine.Engine.Components
 {
@@ -18,82 +19,42 @@ namespace SaturnEngine.Engine.Components
 
         [Export] public RenderMode RenderMode { get; set; } = RenderMode.Solid;
         [Export] public Mesh Mesh { get; set; }
-       
-        private Matrix4x4 _projectionMatrix;
-        private float _fTheta = 0.0f;
-        private Vector3 _camera = Vector3.Zero;
-        private Vector3 _lookDir = new Vector3(0, 0, 1);
-        private float _deltaTime = 0.0f;
-        private float _yaw = 0.0f;
 
-        public override void OnInit()
+        internal override void OnRender(SDL_Renderer renderer, Matrix4x4 projectionMatrix, Camera3D camera)
         {
-            _projectionMatrix = Matrix4x4.MakeProjection(90.0f, Window.Size.X / Window.Size.Y, 0.1f, 1000.0f);
-        }
+            Vector3 position = Transform.Position;
+            Vector3 rotation = Transform.Rotation.ToEuler();
 
-        public override void OnUpdate(float deltaTime)
-        {
-            _deltaTime = deltaTime;
-        }
+            Vector3 cameraPosition = camera.Transform.Position;
+            Vector3 cameraRotation = camera.Transform.Rotation.ToEuler();
 
-        internal override void OnRender(SDL_Renderer renderer)
-        {
-            if (Input.IsKeyPressed(KeyCode._1))
-            {
-                RenderMode = RenderMode.Solid;
-            }
-            if (Input.IsKeyPressed(KeyCode._2))
-            {
-                RenderMode = RenderMode.Wireframe;
-            }
+            Matrix4x4 matRotZ = Matrix4x4.MakeRotationZ(rotation.Z);
+            Matrix4x4 matRotY = Matrix4x4.MakeRotationY(rotation.Y);
+            Matrix4x4 matRotX = Matrix4x4.MakeRotationX(rotation.X);
 
-            if (Input.IsKeyPressed(KeyCode.ArrowUp))
-            {
-                _camera.Y += 8.0f * _deltaTime;
-            }
-            if (Input.IsKeyPressed(KeyCode.ArrowDown))
-            {
-                _camera.Y -= 8.0f * _deltaTime;
-            }
-
-            Vector3 forward = _lookDir * (8.0f * _deltaTime);
-
-            if(Input.IsKeyPressed(KeyCode.W))
-            {
-                _camera += forward;
-            }
-            if (Input.IsKeyPressed(KeyCode.S))
-            {
-                _camera -= forward;
-            }
-
-            if (Input.IsKeyPressed(KeyCode.A))
-            {
-                _yaw -= 2.0f * _deltaTime;
-            }
-            if (Input.IsKeyPressed(KeyCode.D))
-            {
-                _yaw += 2.0f * _deltaTime;
-            }
-
-            //_fTheta += 1.0f * _deltaTime;
-            Matrix4x4 matRotZ = Matrix4x4.MakeRotationZ(_fTheta * 0.5f);
-            Matrix4x4 matRotX = Matrix4x4.MakeRotationX(_fTheta);
-
-            Matrix4x4 matTrans = Matrix4x4.MakeTranslation(0.0f, 0.0f, 5.0f);
+            Matrix4x4 matTrans = Matrix4x4.MakeTranslation(position.X, position.Y, position.Z);
 
             Matrix4x4 matWorld = Matrix4x4.Identity;
-            matWorld = Matrix4x4.MultiplyMatrix(matRotZ, matRotX);
+            matWorld = Matrix4x4.MultiplyMatrix(matWorld, matRotZ);
+            matWorld = Matrix4x4.MultiplyMatrix(matWorld, matRotY);
+            matWorld = Matrix4x4.MultiplyMatrix(matWorld, matRotX);
             matWorld = Matrix4x4.MultiplyMatrix(matWorld, matTrans);
 
-            Vector3 up = new Vector3(0, -1, 0);
             Vector3 target = new Vector3(0, 0, 1);
-            
-            Matrix4x4 matCameraRot = Matrix4x4.MakeRotationY(_yaw);
-            _lookDir = Matrix4x4.MultiplyVector(matCameraRot, target);
-            target = _camera + _lookDir;
 
-            Matrix4x4 matCamera = Matrix4x4.PointAt(_camera, target, up);
+            matRotZ = Matrix4x4.MakeRotationZ(cameraRotation.Z);
+            matRotY = Matrix4x4.MakeRotationY(cameraRotation.Y);
+            matRotX = Matrix4x4.MakeRotationX(cameraRotation.X);
+
+            Matrix4x4 matCameraRot = Matrix4x4.Identity;
+            matCameraRot = Matrix4x4.MultiplyMatrix(matCameraRot, matRotZ);
+            matCameraRot = Matrix4x4.MultiplyMatrix(matCameraRot, matRotY);
+            matCameraRot = Matrix4x4.MultiplyMatrix(matCameraRot, matRotX);
+
+            Vector3 lookDir = Matrix4x4.MultiplyVector(matCameraRot, target);
+            target = cameraPosition + lookDir;
+
+            Matrix4x4 matCamera = Matrix4x4.PointAt(cameraPosition, target, Vector3.Up);
             Matrix4x4 matView = Matrix4x4.QuickInverse(matCamera);
 
 
@@ -105,6 +66,9 @@ namespace SaturnEngine.Engine.Components
                 triangleTransformed.Vertices[0] = Matrix4x4.MultiplyVector(matWorld, triangle.Vertices[0]);
                 triangleTransformed.Vertices[1] = Matrix4x4.MultiplyVector(matWorld, triangle.Vertices[1]);
                 triangleTransformed.Vertices[2] = Matrix4x4.MultiplyVector(matWorld, triangle.Vertices[2]);
+                triangleTransformed.TexCoords[0] = triangle.TexCoords[0];
+                triangleTransformed.TexCoords[1] = triangle.TexCoords[2];
+                triangleTransformed.TexCoords[1] = triangle.TexCoords[2];
 
                 Vector3 normal = new Vector3();
                 Vector3 line1 = new Vector3();
@@ -116,7 +80,7 @@ namespace SaturnEngine.Engine.Components
                 normal = Vector3.Cross(line1, line2);
                 normal.Normalize();
 
-                Vector3 cameraRay = triangleTransformed.Vertices[0] - _camera;
+                Vector3 cameraRay = triangleTransformed.Vertices[0] - cameraPosition;
 
                 if (Vector3.Dot(normal, cameraRay) < 0.0f)
                 {
@@ -125,30 +89,36 @@ namespace SaturnEngine.Engine.Components
 
                     // Calculate color
                     float dp = MathF.Max(0.1f, Vector3.Dot(lightDirection, normal));
-                    Color color = new Color((byte)(255 * dp), (byte)(255 * dp), (byte)(255 * dp), 255);   
+                    Color color = new Color((byte)(255 * dp), (byte)(255 * dp), (byte)(255 * dp), 255);
 
                     // Convert world space to view space
                     Triangle triangleViewed = new Triangle
                     (
                         Matrix4x4.MultiplyVector(matView, triangleTransformed.Vertices[0]),
                         Matrix4x4.MultiplyVector(matView, triangleTransformed.Vertices[1]),
-                        Matrix4x4.MultiplyVector(matView, triangleTransformed.Vertices[2])
+                        Matrix4x4.MultiplyVector(matView, triangleTransformed.Vertices[2]),
+                        triangleTransformed.TexCoords[0],
+                        triangleTransformed.TexCoords[1],
+                        triangleTransformed.TexCoords[2]
                     );
                     triangleViewed.Color = color;
 
                     // Clip viewed triangle against near plane
                     int clippedTriangles = 0;
                     Triangle[] clipped = { new Triangle(), new Triangle() };
-                    clippedTriangles = Triangle.ClipAgainstPlane(new Vector3(0, 0, 1.0f), new Vector3(0, 0, 1), ref triangleViewed, ref clipped[0], ref clipped[1]);
+                    clippedTriangles = Triangle.ClipAgainstPlane(new Vector3(0, 0, 0.1f), new Vector3(0, 0, 1), ref triangleViewed, ref clipped[0], ref clipped[1]);
 
-                    for(int n = 0; n < clippedTriangles; n++)
+                    for (int n = 0; n < clippedTriangles; n++)
                     {
                         // Project triangles from 3D to 2D
                         Triangle triangleProjected = new Triangle
                         (
-                            Matrix4x4.MultiplyVector(_projectionMatrix, clipped[n].Vertices[0]),
-                            Matrix4x4.MultiplyVector(_projectionMatrix, clipped[n].Vertices[1]),
-                            Matrix4x4.MultiplyVector(_projectionMatrix, clipped[n].Vertices[2])
+                            Matrix4x4.MultiplyVector(projectionMatrix, clipped[n].Vertices[0]),
+                            Matrix4x4.MultiplyVector(projectionMatrix, clipped[n].Vertices[1]),
+                            Matrix4x4.MultiplyVector(projectionMatrix, clipped[n].Vertices[2]),
+                            clipped[n].TexCoords[0],
+                            clipped[n].TexCoords[1],
+                            clipped[n].TexCoords[2]
                         );
                         triangleProjected.Color = clipped[n].Color;
 
@@ -160,6 +130,8 @@ namespace SaturnEngine.Engine.Components
                         triangleProjected.Vertices[0] = triangleProjected.Vertices[0] + offsetView;
                         triangleProjected.Vertices[1] = triangleProjected.Vertices[1] + offsetView;
                         triangleProjected.Vertices[2] = triangleProjected.Vertices[2] + offsetView;
+
+                        float aspectRatio = Window.Size.X / Window.Size.Y;
 
                         triangleProjected.Vertices[0].X *= 0.5f * Window.Size.X;
                         triangleProjected.Vertices[0].Y *= 0.5f * Window.Size.Y;
@@ -181,19 +153,18 @@ namespace SaturnEngine.Engine.Components
                 float z2 = (tri2.Vertices[0].Z + tri2.Vertices[1].Z + tri2.Vertices[2].Z) / 3.0f;
                 return z2.CompareTo(z1);
             });
-            
+
             foreach (Triangle triangleToRaster in trianglesToRaster)
             {
-
                 Triangle[] clipped = { new Triangle(), new Triangle() };
                 List<Triangle> triangles = new List<Triangle>();
                 triangles.Add(triangleToRaster);
                 int newTriangles = 1;
 
-                for(int p = 0; p < 4; p++)
+                for (int p = 0; p < 4; p++)
                 {
                     int trianglesToAdd = 0;
-                        
+
                     while (newTriangles > 0)
                     {
                         Triangle test = triangles.First();
@@ -216,7 +187,7 @@ namespace SaturnEngine.Engine.Components
                                 break;
                         }
 
-                        for(int w = 0; w < trianglesToAdd; w++)
+                        for (int w = 0; w < trianglesToAdd; w++)
                         {
                             triangles.Add(clipped[w]);
                         }
@@ -224,33 +195,39 @@ namespace SaturnEngine.Engine.Components
                     newTriangles = triangles.Count;
                 }
 
-                if(RenderMode == RenderMode.Solid)
+                if (RenderMode == RenderMode.Solid)
                 {
-                    foreach (Triangle tri in triangles)
+                    if(Mesh.Texture != null)
                     {
-                        SDL.SDL_Color Color = tri.Color.ToSDL_Color();
-                        SDL.SDL_Vertex[] vertices = new SDL.SDL_Vertex[3];
 
-                        vertices[0] = new SDL.SDL_Vertex
+                    }
+                    else
+                    {
+                        foreach (Triangle tri in triangles)
                         {
-                            position = new SDL.SDL_FPoint { x = tri.Vertices[0].X, y = tri.Vertices[0].Y },
-                            color = Color
-                        };
-                        vertices[1] = new SDL.SDL_Vertex
-                        {
-                            position = new SDL.SDL_FPoint { x = tri.Vertices[1].X, y = tri.Vertices[1].Y },
-                            color = Color
-                        };
-                        vertices[2] = new SDL.SDL_Vertex
-                        {
-                            position = new SDL.SDL_FPoint { x = tri.Vertices[2].X, y = tri.Vertices[2].Y },
-                            color = Color
-                        };
+                            SDL.SDL_Color Color = tri.Color.ToSDL_Color();
+                            SDL.SDL_Vertex[] vertices = new SDL.SDL_Vertex[3];
 
-                        int[] indices = { 0, 1, 2 };
+                            vertices[0] = new SDL.SDL_Vertex
+                            {
+                                position = new SDL.SDL_FPoint { x = tri.Vertices[0].X, y = tri.Vertices[0].Y },
+                                color = Color
+                            };
+                            vertices[1] = new SDL.SDL_Vertex
+                            {
+                                position = new SDL.SDL_FPoint { x = tri.Vertices[1].X, y = tri.Vertices[1].Y },
+                                color = Color
+                            };
+                            vertices[2] = new SDL.SDL_Vertex
+                            {
+                                position = new SDL.SDL_FPoint { x = tri.Vertices[2].X, y = tri.Vertices[2].Y },
+                                color = Color
+                            };
 
-                        SDL.SDL_RenderGeometry(renderer, IntPtr.Zero, vertices, vertices.Length, indices, indices.Length);
+                            int[] indices = { 0, 1, 2 };
 
+                            SDL.SDL_RenderGeometry(renderer, IntPtr.Zero, vertices, vertices.Length, indices, indices.Length);
+                        }
                     }
                 }
                 else
