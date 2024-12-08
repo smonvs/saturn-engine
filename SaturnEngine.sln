@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SaturnEngine", "SaturnEngine.csproj", "{E2C7AF07-1BF4-4A18-B26E-83B64EEE7458}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SaturnEngine", "SaturnEngine.csproj", "{E2C7AF07-1BF4-4A18-B26E-83B64EEE7458}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SaturnEngineTest", "..\SaturnEngineTest\SaturnEngineTest.csproj", "{E5079484-00ED-43FA-B895-0D57ECACC8BE}"
 EndProject

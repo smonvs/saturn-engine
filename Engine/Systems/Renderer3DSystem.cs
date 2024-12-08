@@ -2,31 +2,37 @@
 using SaturnEngine.Engine.Core;
 using SaturnEngine.Engine.Structs;
 
-using SDL_Renderer = nint;
-
 namespace SaturnEngine.Engine.Systems
 {
     internal class Renderer3DSystem : SystemBase<Renderer3D>
     {
 
-        private SDL_Renderer _renderer;
+        private Window _window;
+        private Matrix4x4 _projectionMatrix;
 
-        internal Renderer3DSystem(SDL_Renderer renderer)
+        internal Renderer3DSystem(Window window)
         {
-            _renderer = renderer;
+            _window = window;
+            CalculateProjectionMatrix();
+        }
+
+        private void CalculateProjectionMatrix()
+        {
+
         }
 
         protected internal override void Update()
         {
+            // TODO: move outside of update
+            _projectionMatrix = Matrix4x4.MakeProjection(Camera3D.Main.FieldOfView, Window.BufferSize.Y / Window.BufferSize.X, 0.1f, 1000.0f);
+            
             Camera3D camera = Camera3D.Main;
 
-            if(camera != null)
+            if (camera != null)
             {
-                Matrix4x4 projectionMatrix = Matrix4x4.MakeProjection(camera.FieldOfView, Window.Size.Y / Window.Size.X, 0.1f, 1000.0f);
-
                 foreach (Renderer3D component in _cache.Values)
                 {
-                    if (component.IsEnabled) component.OnRender(_renderer, projectionMatrix, camera);
+                    if (component.IsEnabled) component.OnRender(_window, _projectionMatrix, camera);
                 }
             }
         }

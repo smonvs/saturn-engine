@@ -1,37 +1,14 @@
 ﻿using SaturnEngine.Engine.Components;
 using SaturnEngine.Engine.Structs;
-using SDL2;
-using System.Reflection.Metadata.Ecma335;
-
-using SDL_Renderer = System.IntPtr;
-using SDL_Texture = System.IntPtr;
 
 namespace SaturnEngine.Engine.Core
 {
     internal static class Graphics
     {
 
-        private static SDL_Renderer _renderer = IntPtr.Zero; 
-        private static SDL_Texture _texture = IntPtr.Zero;
-        private static uint[] _pixels;
-
-        internal static void Init(SDL_Renderer renderer)
-        {
-            _renderer = renderer;
-            _texture = SDL.SDL_CreateTexture
-            (
-                renderer, 
-                SDL.SDL_PIXELFORMAT_ARGB8888, 
-                (int)SDL.SDL_TextureAccess.SDL_TEXTUREACCESS_STATIC, 
-                (int)Window.Size.X, 
-                (int)Window.Size.Y
-            );
-            _pixels = new UInt32[(int)Window.Size.X * (int)Window.Size.Y];
-        }
-
         internal static Matrix4x4 CalculateWorldMatrix(Vector3 position, Quaternion rotation)
         {
-            Vector3 rotationRadiants = rotation.ToEuler(); 
+            Vector3 rotationRadiants = rotation.ToEuler();
 
             Matrix4x4 matRotZ = Matrix4x4.MakeRotationZ(rotationRadiants.Z);
             Matrix4x4 matRotY = Matrix4x4.MakeRotationY(rotationRadiants.Y);
@@ -86,8 +63,8 @@ namespace SaturnEngine.Engine.Core
                 triangleTransformed.Vertices[1] = matWorld * triangle.Vertices[1];
                 triangleTransformed.Vertices[2] = matWorld * triangle.Vertices[2];
                 triangleTransformed.TexCoords[0] = triangle.TexCoords[0];
-                triangleTransformed.TexCoords[1] = triangle.TexCoords[2];
-                triangleTransformed.TexCoords[1] = triangle.TexCoords[2];
+                triangleTransformed.TexCoords[1] = triangle.TexCoords[1];
+                triangleTransformed.TexCoords[2] = triangle.TexCoords[2];
 
                 Vector3 normal = new Vector3();
                 Vector3 line1 = new Vector3();
@@ -113,9 +90,9 @@ namespace SaturnEngine.Engine.Core
                     // Convert world space to view space
                     Triangle triangleViewed = new Triangle
                     (
-                    matView * triangleTransformed.Vertices[0],
-                    matView * triangleTransformed.Vertices[1],
-                    matView * triangleTransformed.Vertices[2],
+                        matView * triangleTransformed.Vertices[0],
+                        matView * triangleTransformed.Vertices[1],
+                        matView * triangleTransformed.Vertices[2],
                         triangleTransformed.TexCoords[0],
                         triangleTransformed.TexCoords[1],
                         triangleTransformed.TexCoords[2]
@@ -125,7 +102,7 @@ namespace SaturnEngine.Engine.Core
                     // Clip viewed triangle against near plane
                     int clippedTriangles = 0;
                     Triangle[] clipped = { new Triangle(), new Triangle() };
-                    clippedTriangles = Triangle.ClipAgainstPlane(new Vector3(0, 0, 0.1f), new Vector3(0, 0, 1), ref triangleViewed, ref clipped[0], ref clipped[1]);
+                    clippedTriangles = Triangle.ClipAgainstPlane(new Vector3(0, 0, 0.1f), new Vector3(0, 0, 1), triangleViewed, out clipped[0], out clipped[1]);
 
                     for (int n = 0; n < clippedTriangles; n++)
                     {
@@ -150,14 +127,14 @@ namespace SaturnEngine.Engine.Core
                         triangleProjected.Vertices[1] = triangleProjected.Vertices[1] + offsetView;
                         triangleProjected.Vertices[2] = triangleProjected.Vertices[2] + offsetView;
 
-                        float aspectRatio = Window.Size.X / Window.Size.Y;
+                        float aspectRatio = Window.BufferSize.X / Window.BufferSize.Y;
 
-                        triangleProjected.Vertices[0].X *= 0.5f * Window.Size.X;
-                        triangleProjected.Vertices[0].Y *= 0.5f * Window.Size.Y;
-                        triangleProjected.Vertices[1].X *= 0.5f * Window.Size.X;
-                        triangleProjected.Vertices[1].Y *= 0.5f * Window.Size.Y;
-                        triangleProjected.Vertices[2].X *= 0.5f * Window.Size.X;
-                        triangleProjected.Vertices[2].Y *= 0.5f * Window.Size.Y;
+                        triangleProjected.Vertices[0].X *= 0.5f * Window.BufferSize.X;
+                        triangleProjected.Vertices[0].Y *= 0.5f * Window.BufferSize.Y;
+                        triangleProjected.Vertices[1].X *= 0.5f * Window.BufferSize.X;
+                        triangleProjected.Vertices[1].Y *= 0.5f * Window.BufferSize.Y;
+                        triangleProjected.Vertices[2].X *= 0.5f * Window.BufferSize.X;
+                        triangleProjected.Vertices[2].Y *= 0.5f * Window.BufferSize.Y;
 
                         trianglesToRaster.Add(triangleProjected);
                     }
@@ -193,16 +170,16 @@ namespace SaturnEngine.Engine.Core
                         switch (p)
                         {
                             case 0:
-                                trianglesToAdd = Triangle.ClipAgainstPlane(new Vector3(0, 0, 0), new Vector3(0, 1, 0), ref test, ref clipped[0], ref clipped[1]);
+                                trianglesToAdd = Triangle.ClipAgainstPlane(new Vector3(0, 0, 0), new Vector3(0, 1, 0), test, out clipped[0], out clipped[1]);
                                 break;
                             case 1:
-                                trianglesToAdd = Triangle.ClipAgainstPlane(new Vector3(0, Window.Size.Y - 1, 0), new Vector3(0, -1, 0), ref test, ref clipped[0], ref clipped[1]);
+                                trianglesToAdd = Triangle.ClipAgainstPlane(new Vector3(0, Window.BufferSize.Y - 1, 0), new Vector3(0, -1, 0), test, out clipped[0], out clipped[1]);
                                 break;
                             case 2:
-                                trianglesToAdd = Triangle.ClipAgainstPlane(new Vector3(0, 0, 0), new Vector3(1, 0, 0), ref test, ref clipped[0], ref clipped[1]);
+                                trianglesToAdd = Triangle.ClipAgainstPlane(new Vector3(0, 0, 0), new Vector3(1, 0, 0), test, out clipped[0], out clipped[1]);
                                 break;
                             case 3:
-                                trianglesToAdd = Triangle.ClipAgainstPlane(new Vector3(Window.Size.X - 1, 0, 0), new Vector3(-1, 0, 0), ref test, ref clipped[0], ref clipped[1]);
+                                trianglesToAdd = Triangle.ClipAgainstPlane(new Vector3(Window.BufferSize.X - 1, 0, 0), new Vector3(-1, 0, 0), test, out clipped[0], out clipped[1]);
                                 break;
                         }
 
@@ -219,37 +196,6 @@ namespace SaturnEngine.Engine.Core
 
             return result;
         }
-
-        internal static void DrawLine(float x0, float y0, float x1, float y1, Color color)
-        {
-            SDL.SDL_SetRenderDrawColor(_renderer, color.R, color.G, color.B, color.A);
-            SDL.SDL_RenderDrawLine(_renderer, (int)x0, (int)y0, (int)x1, (int)y1);
-        }
-
-        internal static void DrawTriangle(Triangle triangle)
-        {
-            SDL.SDL_Color Color = triangle.Color.ToSDL_Color();
-            SDL.SDL_Vertex[] vertices = new SDL.SDL_Vertex[3];
-
-            vertices[0] = new SDL.SDL_Vertex
-            {
-                position = new SDL.SDL_FPoint { x = triangle.Vertices[0].X, y = triangle.Vertices[0].Y },
-                color = Color
-            };
-            vertices[1] = new SDL.SDL_Vertex
-            {
-                position = new SDL.SDL_FPoint { x = triangle.Vertices[1].X, y = triangle.Vertices[1].Y },
-                color = Color
-            };
-            vertices[2] = new SDL.SDL_Vertex
-            {
-                position = new SDL.SDL_FPoint { x = triangle.Vertices[2].X, y = triangle.Vertices[2].Y },
-                color = Color
-            };
-            int[] indices = { 0, 1, 2 };
-
-            SDL.SDL_RenderGeometry(_renderer, IntPtr.Zero, vertices, vertices.Length, indices, indices.Length);
-        }
-
+   
     }
 }

@@ -13,17 +13,20 @@ namespace SaturnEngine.Engine.Structs
 
         public float X { get; set; }
         public float Y { get; set; }
+        public float W { get; set; }
 
         public Vector2()
         {
             X = 0;
             Y = 0;
+            W = 1;
         }
 
         public Vector2(float x, float y)
         {
             X = x;
             Y = y;
+            W = 1;
         }
 
         #region Operators
@@ -54,6 +57,11 @@ namespace SaturnEngine.Engine.Structs
         }
 
         public static Vector2 operator *(Vector2 v, float f)
+        {
+            return new Vector2(v.X * f, v.Y * f);
+        }
+
+        public static Vector2 operator *(float f, Vector2 v)
         {
             return new Vector2(v.X * f, v.Y * f);
         }

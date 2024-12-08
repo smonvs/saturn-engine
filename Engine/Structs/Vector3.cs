@@ -17,7 +17,7 @@ namespace SaturnEngine.Engine.Structs
         public float X { get; set; }
         public float Y { get; set; }
         public float Z { get; set; }
-        internal float W { get; set; }
+        public float W { get; internal set; }
 
         public float Length { get { return MathF.Sqrt(Dot(this, this)); } }
 
@@ -36,6 +36,7 @@ namespace SaturnEngine.Engine.Structs
             Z = z;
             W = 1;
         }
+
         internal Vector3(float x, float y, float z, float w)
         {
             X = x;

@@ -6,7 +6,6 @@ namespace SaturnEngine.Engine.Core
     {
 
         public Triangle[] Triangles { get; }
-        public Texture Texture { get; set; }
 
         #region Static Meshes
 
@@ -42,7 +41,6 @@ namespace SaturnEngine.Engine.Core
         public Mesh(Triangle[] tris, string? filepath = null) : base(filepath)
         {
             Triangles = tris;
-            Texture = null;
         }
 
     }

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SDL2;
 
 namespace SaturnEngine.Engine.Structs
 {
@@ -29,9 +28,9 @@ namespace SaturnEngine.Engine.Structs
             Vertices[0] = v1; 
             Vertices[1] = v2; 
             Vertices[2] = v3;
-            TexCoords[0] = new Vector2(0, 0);
-            TexCoords[1] = new Vector2(0, 0);
-            TexCoords[2] = new Vector2(0, 0);
+            TexCoords[0] = new Vector2(0.0f, 0.0f);
+            TexCoords[1] = new Vector2(0.0f, 0.0f);
+            TexCoords[2] = new Vector2(0.0f, 0.0f);
         }
 
         public Triangle(Vector3 v1, Vector3 v2, Vector3 v3, Vector2 t1, Vector2 t2, Vector2 t3)
@@ -44,8 +43,11 @@ namespace SaturnEngine.Engine.Structs
             TexCoords[2] = t3;
         }
 
-        public static int ClipAgainstPlane(Vector3 planeP, Vector3 planeN, ref Triangle inTri, ref Triangle outTri1, ref Triangle outTri2)
+        public static int ClipAgainstPlane(Vector3 planeP, Vector3 planeN, Triangle inTri, out Triangle outTri1, out Triangle outTri2)
         {
+            outTri1 = new Triangle();
+            outTri2 = new Triangle();
+
             // Make sure plane ormal is indeed ormal
             planeN.Normalize();
 

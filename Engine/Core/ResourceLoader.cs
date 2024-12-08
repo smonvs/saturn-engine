@@ -1,8 +1,9 @@
 ﻿using SaturnEngine.Engine.Structs;
-using System.ComponentModel;
 using System.Globalization;
-using System.Reflection;
+using System.IO.Compression;
 using System.Xml.Linq;
+using System.Drawing;
+using System.IO;
 
 namespace SaturnEngine.Engine.Core
 {
@@ -37,14 +38,22 @@ namespace SaturnEngine.Engine.Core
                             resource = LoadObj(filepath, streamReader);
                         }
                         break;
+                    case ".png":
+                        resource = LoadPNG(filepath);
+                        break;
                     default:
                         Log.Error($"ResourceLoader: File at filepath \"{filepath}\" could not be loaded. Reason: Filetype \"{fileExtension}\" not supported");
                         return null;
                 }
 
-                _resources.Add(resource);
-                Log.Info($"ResourceLoader: File at filepath \"{filepath}\" was loaded");
-                return TryReturnFile<T>(resource);
+                if(resource != null)
+                {
+                    _resources.Add(resource);
+                    Log.Info($"ResourceLoader: File at filepath \"{filepath}\" was loaded");
+                    return TryReturnFile<T>(resource);
+                }
+
+                return null;
             }
         }
 
@@ -144,36 +153,108 @@ namespace SaturnEngine.Engine.Core
             }
         }
 
+        private static int ReadInt32(BinaryReader reader)
+        {
+            return BitConverter.ToInt32(reader.ReadBytes(4), 0);
+        }
+
+        private static byte[] Decompress(byte[] data)
+        {
+            using (MemoryStream ms = new MemoryStream(data))
+            using (DeflateStream ds = new DeflateStream(ms, CompressionMode.Decompress))
+            using (MemoryStream output = new MemoryStream())
+            {
+                ds.CopyTo(output);
+                return output.ToArray();
+            }
+        }
+
         private static Mesh LoadObj(string filepath, StreamReader streamReader)
         {
             List<Vector3> vertices = new List<Vector3>();
+            List<Vector2> uvs = new List<Vector2>();
             List<Triangle> triangles = new List<Triangle>();
 
-            while (!streamReader.EndOfStream)
+            using (StreamReader reader = new StreamReader(filepath))
             {
-                string line = streamReader.ReadLine();
-                string[] parts = line.Split(' ');
-
-                switch (parts[0])
+                string line;
+                while ((line = reader.ReadLine()) != null)
                 {
-                    case "v":
+                    if (line.StartsWith("v "))
+                    {
+                        string[] parts = line.Split(' ');
                         vertices.Add(new Vector3(
                             float.Parse(parts[1], CultureInfo.InvariantCulture),
                             float.Parse(parts[2], CultureInfo.InvariantCulture),
                             float.Parse(parts[3], CultureInfo.InvariantCulture)
                         ));
-                        break;
-                    case "f":
-                        triangles.Add(new Triangle(
-                            vertices[int.Parse(parts[1].Split('/')[0]) - 1],
-                            vertices[int.Parse(parts[2].Split('/')[0]) - 1],
-                            vertices[int.Parse(parts[3].Split('/')[0]) - 1]
+                    }
+                    else if (line.StartsWith("vt "))
+                    {
+                        string[] parts = line.Split(' ');
+                        uvs.Add(new Vector2(
+                            float.Parse(parts[1], CultureInfo.InvariantCulture),
+                            float.Parse(parts[2], CultureInfo.InvariantCulture)
                         ));
-                        break;
+                    }
+                    else if (line.StartsWith("f "))
+                    {
+                        string[] parts = line.Split(' ');
+                        int[] faceIndices = new int[parts.Length - 1];
+                        int[] uvIndices = new int[parts.Length - 1];
+                        for (int i = 1; i < parts.Length; i++)
+                        {
+                            string[] indices = parts[i].Split('/');
+                            faceIndices[i - 1] = int.Parse(indices[0]) - 1;
+                            if (indices.Length > 1 && indices[1] != "")
+                            {
+                                uvIndices[i - 1] = int.Parse(indices[1]) - 1;
+                            }
+                        }
+
+                        // Triangulate the face (assuming it's a convex polygon)
+                        for (int i = 1; i < faceIndices.Length - 1; i++)
+                        {
+                            triangles.Add(new Triangle(
+                                vertices[faceIndices[0]], vertices[faceIndices[i]], vertices[faceIndices[i + 1]], 
+                                uvs[uvIndices[0]], uvs[uvIndices[i]], uvs[uvIndices[i + 1]]
+                            ));
+                        }
+                    }
                 }
             }
 
             return new Mesh(triangles.ToArray(), filepath);
+        }
+
+        private static Texture LoadPNG(string filepath)
+        {
+            using(Bitmap bitmap = new Bitmap(filepath))
+            {
+                int width = bitmap.Width;
+                int height = bitmap.Height;
+                byte[] pixels = new byte[width * height * 4];
+
+                for (int y = 0; y < height; y++)
+                {
+                    for(int x = 0; x < width; x++)
+                    {
+                        System.Drawing.Color color = bitmap.GetPixel(x, y);
+                        
+                        int index = (y * width + x) * 4;
+
+                        pixels[index] = color.R;
+                        pixels[index + 1] = color.G;
+                        pixels[index + 2] = color.B;
+                        pixels[index + 3] = color.A;
+                    }
+                }
+
+                return new Texture(width, height, pixels, filepath);
+            }
+
+            Log.Error($"ResourceLoader: PNG at filepath \"{filepath}\" could not be loaded. Reason: PNG could not be parsed");
+            return null;
         }
 
     }

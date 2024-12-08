@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SDL2;
 
 namespace SaturnEngine.Engine.Structs
 {
@@ -34,6 +33,14 @@ namespace SaturnEngine.Engine.Structs
             A = a;
         }
 
+        public Color(byte r, byte g, byte b)
+        {
+            R = r;
+            G = g;
+            B = b;
+            A = 0xFF;
+        }
+
         #region operators
 
         public static bool operator==(Color c1, Color c2)
@@ -47,11 +54,6 @@ namespace SaturnEngine.Engine.Structs
         }
 
         #endregion
-
-        public SDL.SDL_Color ToSDL_Color()
-        {
-            return new SDL.SDL_Color { r = R, g = G, b = B, a = A };
-        }   
 
     }
 }

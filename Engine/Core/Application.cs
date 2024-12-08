@@ -1,7 +1,6 @@
 ﻿using SaturnEngine.Engine.Components;
 using SaturnEngine.Engine.Systems;
 using System.Diagnostics;
-using SDL2;
 using System.Runtime.InteropServices;
 
 namespace SaturnEngine.Engine.Core
@@ -43,9 +42,9 @@ namespace SaturnEngine.Engine.Core
 
         #endregion
 
-        public Application(string title, int width, int height)
+        public Application(string title, int width, int height, float renderScale = 1.0f)
         {
-            _window = new Window(this, title, width, height);
+            _window = new Window(this, title, width, height, renderScale);
             _sceneManager = new SceneManager();
             _sceneManager.OnEntityDestroyed += OnEntityDestroyed;
             _sceneManager.OnComponentAdded += OnComponentAdded;
@@ -61,11 +60,9 @@ namespace SaturnEngine.Engine.Core
         {
             Running = _window.Open();
 
-            _renderer3DSystem = new Renderer3DSystem(_window.GetRenderer());
-
-            Graphics.Init(_window.GetRenderer());
-
             OnLoad?.Invoke(_sceneManager);
+
+            _renderer3DSystem = new Renderer3DSystem(_window);
 
             Stopwatch stopwatch = new Stopwatch();
             float deltaTime = 0.0f;
@@ -81,13 +78,13 @@ namespace SaturnEngine.Engine.Core
 
                 _sceneManager.UpdateScenes(deltaTime);
 
-                _window.Clear();
+                _window.RenderClear();
 
                 _renderer3DSystem.Update();
 
-                _window.Draw();
+                _window.RenderDraw();
 
-                //SDL.SDL_Delay(1000 / 144);
+                while(stopwatch.ElapsedMilliseconds < (1000 / 500)) { }
 
                 stopwatch.Stop();
                 deltaTime = stopwatch.ElapsedMilliseconds / 1000.0f;
@@ -97,7 +94,7 @@ namespace SaturnEngine.Engine.Core
 
                 if(elapsedTime >= 1.0f)
                 {
-                    _window.ShowFpsInTitle((int)(frameCount / elapsedTime), (int)(deltaTime * 1000));
+                    _window.ShowFpsInTitle((int)(frameCount / elapsedTime), (float)(deltaTime * 1000));
                     frameCount = 0;
                     elapsedTime -= 1.0f;
                 }

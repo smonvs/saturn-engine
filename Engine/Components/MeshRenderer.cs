@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SaturnEngine.Engine.Core;
+﻿using SaturnEngine.Engine.Core;
 using SaturnEngine.Engine.Enums;
 using SaturnEngine.Engine.Structs;
-using SDL2;
 
 using SDL_Renderer = nint;
 using SDL_Texture = nint;
@@ -19,8 +12,16 @@ namespace SaturnEngine.Engine.Components
 
         [Export] public RenderMode RenderMode { get; set; } = RenderMode.Solid;
         [Export] public Mesh Mesh { get; set; }
+        [Export] public Texture Texture { get; set; }
 
-        internal override void OnRender(SDL_Renderer renderer, Matrix4x4 matProj, Camera3D camera)
+        public override void OnUpdate(float deltaTime)
+        {
+            Transform.RotateX(-30.0f * deltaTime);
+            Transform.RotateY(100.0f * -deltaTime);
+            Transform.RotateZ(50.0f * deltaTime);
+        }
+
+        internal override void OnRender(Window window, Matrix4x4 matProj, Camera3D camera)
         {
 
             Matrix4x4 matCamera = Graphics.CalculateCameraMatrix(camera.Transform.Position, camera.Transform.Rotation);
@@ -29,26 +30,27 @@ namespace SaturnEngine.Engine.Components
 
             if (RenderMode == RenderMode.Solid)
             {
-                if(Mesh.Texture != null)
+                if(Texture != null)
                 {
-
+                    foreach (Triangle tri in triangles)
+                    {
+                        window.DrawTexturedTriangle(tri, Texture);
+                    }
                 }
                 else
                 {
                     foreach (Triangle tri in triangles)
                     {
-                        Graphics.DrawTriangle(tri);
+                        window.DrawFilledTriangle(tri);
                     }
                 }
             }
             else
             {
-                Color color = new Color(0xFF, 0xAA, 0x00, 0xFF);
+                Color color = new Color(0xFF, 0xAA, 0x00);
                 foreach (Triangle tri in triangles)
                 {
-                    Graphics.DrawLine((int)tri.Vertices[0].X, (int)tri.Vertices[0].Y, (int)tri.Vertices[1].X, (int)tri.Vertices[1].Y, color);
-                    Graphics.DrawLine((int)tri.Vertices[1].X, (int)tri.Vertices[1].Y, (int)tri.Vertices[2].X, (int)tri.Vertices[2].Y, color);
-                    Graphics.DrawLine((int)tri.Vertices[2].X, (int)tri.Vertices[2].Y, (int)tri.Vertices[0].X, (int)tri.Vertices[0].Y, color);
+                    window.DrawTriangle(tri, color);
                 }
             }
         }
