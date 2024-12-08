@@ -194,10 +194,24 @@ namespace SaturnEngine.Engine.Core
             if (x >= 0 && x < BufferSize.X && y >= 0 && y < BufferSize.Y)
             {
                 int index = ((int)y * (int)BufferSize.X + (int)x) * 4;
-                _buffer[index] = color.B;
-                _buffer[index + 1] = color.G;
-                _buffer[index + 2] = color.R;
-                _buffer[index + 3] = color.A;
+
+                if (color.A < 0xFF)
+                {
+                    float alpha = color.A / 255.0f;
+                    float invAlpha = 1.0f - alpha;
+
+                    _buffer[index] = (byte)((color.B * alpha) + (_buffer[index] * invAlpha));
+                    _buffer[index + 1] = (byte)((color.G * alpha) + (_buffer[index + 1] * invAlpha));
+                    _buffer[index + 2] = (byte)((color.R * alpha) + (_buffer[index + 2] * invAlpha));
+                    _buffer[index + 3] = (byte)((color.A * alpha) + (_buffer[index + 3] * invAlpha));
+                }
+                else
+                {
+                    _buffer[index] = color.B;
+                    _buffer[index + 1] = color.G;
+                    _buffer[index + 2] = color.R;
+                    _buffer[index + 3] = color.A;
+                }
             }
         }
 
@@ -219,10 +233,24 @@ namespace SaturnEngine.Engine.Core
                 if (ix1 >= 0 && ix1 < BufferSize.X && iy1 >= 0 && iy1 < BufferSize.Y)
                 {
                     int index = (iy1 * (int)BufferSize.X + ix1) * 4;
-                    _buffer[index] = color.B;
-                    _buffer[index + 1] = color.G;
-                    _buffer[index + 2] = color.R;
-                    _buffer[index + 3] = color.A;
+
+                    if (color.A < 0xFF)
+                    {
+                        float alpha = color.A / 255.0f;
+                        float invAlpha = 1.0f - alpha;
+
+                        _buffer[index] = (byte)((color.B * alpha) + (_buffer[index] * invAlpha));
+                        _buffer[index + 1] = (byte)((color.G * alpha) + (_buffer[index + 1] * invAlpha));
+                        _buffer[index + 2] = (byte)((color.R * alpha) + (_buffer[index + 2] * invAlpha));
+                        _buffer[index + 3] = (byte)((color.A * alpha) + (_buffer[index + 3] * invAlpha));
+                    }
+                    else
+                    {
+                        _buffer[index] = color.B;
+                        _buffer[index + 1] = color.G;
+                        _buffer[index + 2] = color.R;
+                        _buffer[index + 3] = color.A;
+                    }
                 }
 
                 if (ix1 == ix2 && iy1 == iy2) break;
@@ -252,10 +280,24 @@ namespace SaturnEngine.Engine.Core
                 if (x >= 0 && x < BufferSize.X && y >= 0 && y < BufferSize.Y)
                 {
                     int index = (int)(y * BufferSize.X + x) * 4;
-                    _buffer[index] = color.B;
-                    _buffer[index + 1] = color.G;
-                    _buffer[index + 2] = color.R;
-                    _buffer[index + 3] = color.A;
+
+                    if (color.A < 0xFF)
+                    {
+                        float alpha = color.A / 255.0f;
+                        float invAlpha = 1.0f - alpha;
+
+                        _buffer[index] = (byte)((color.B * alpha) + (_buffer[index] * invAlpha));
+                        _buffer[index + 1] = (byte)((color.G * alpha) + (_buffer[index + 1] * invAlpha));
+                        _buffer[index + 2] = (byte)((color.R * alpha) + (_buffer[index + 2] * invAlpha));
+                        _buffer[index + 3] = (byte)((color.A * alpha) + (_buffer[index + 3] * invAlpha));
+                    }
+                    else
+                    {
+                        _buffer[index] = color.B;
+                        _buffer[index + 1] = color.G;
+                        _buffer[index + 2] = color.R;
+                        _buffer[index + 3] = color.A;
+                    }
                 }
             }
         }
@@ -270,7 +312,10 @@ namespace SaturnEngine.Engine.Core
 
         public void DrawFilledRect(float x, float y, float width, float height, Color color)
         {
-
+            for(int i = 0; i < height; i++)
+            {
+                DrawHorizontalLine(x, x + width, y + i, color);
+            }
         }
 
         public void DrawTriangle(Triangle triangle, Color? color = null)

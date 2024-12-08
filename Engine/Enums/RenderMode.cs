@@ -6,9 +6,11 @@ using System.Threading.Tasks;
 
 namespace SaturnEngine.Engine.Enums
 {
-    public enum RenderMode
+    public enum RenderMode3D
     {
         Wireframe,
-        Solid
+        WireframeTextured,
+        Solid,
+        Textured
     }
 }

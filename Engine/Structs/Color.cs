@@ -22,6 +22,7 @@ namespace SaturnEngine.Engine.Structs
         public static readonly Color Green = new Color(0x00, 0xFF, 0x00, 0xFF);
         public static readonly Color Blue = new Color(0x00, 0x00, 0xFF, 0xFF);
         public static readonly Color Yellow = new Color(0xFF, 0xFF, 0x00, 0xFF);
+        public static readonly Color Orange = new Color(0xFF, 0xAA, 0x00, 0xFF);
 
         #endregion
 

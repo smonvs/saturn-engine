@@ -10,9 +10,11 @@ namespace SaturnEngine.Engine.Components
     public class MeshRenderer : Renderer3D
     {
 
-        [Export] public RenderMode RenderMode { get; set; } = RenderMode.Solid;
+        [Export] public RenderMode3D RenderMode { get; set; } = RenderMode3D.Solid;
         [Export] public Mesh Mesh { get; set; }
-        [Export] public Texture Texture { get; set; }
+        [Export] public Texture Texture { get { return _texture; } set { _texture = value; RenderMode = RenderMode3D.Textured; } }
+
+        private Texture _texture;
 
         public override void OnUpdate(float deltaTime)
         {
@@ -25,35 +27,54 @@ namespace SaturnEngine.Engine.Components
         {
 
             Matrix4x4 matCamera = Graphics.CalculateCameraMatrix(camera.Transform.Position, camera.Transform.Rotation);
-            
+
             List<Triangle> triangles = Graphics.CalculateTriangles(matProj, matCamera, Transform.Position, Transform.Rotation, Mesh);
 
-            if (RenderMode == RenderMode.Solid)
+            switch (RenderMode)
             {
-                if(Texture != null)
-                {
+                case RenderMode3D.Wireframe:
                     foreach (Triangle tri in triangles)
                     {
-                        window.DrawTexturedTriangle(tri, Texture);
+                        window.DrawTriangle(tri, Color.Orange);
                     }
-                }
-                else
-                {
+                    break;
+                case RenderMode3D.WireframeTextured:
+                    if (Texture != null)
+                    {
+                        foreach (Triangle tri in triangles)
+                        {
+                            window.DrawTexturedTriangle(tri, Texture);
+                        }
+                        foreach (Triangle tri in triangles)
+                        {
+                            window.DrawTriangle(tri, Color.Orange);
+                        }
+                    }
+                    else
+                    {
+                        Log.Warning(this, $"RenderMode is set to \"WireframeTextured\", but Texture is null");
+                    }
+                    break;
+                case RenderMode3D.Solid:
                     foreach (Triangle tri in triangles)
                     {
                         window.DrawFilledTriangle(tri);
                     }
-                }
-            }
-            else
-            {
-                Color color = new Color(0xFF, 0xAA, 0x00);
-                foreach (Triangle tri in triangles)
-                {
-                    window.DrawTriangle(tri, color);
-                }
+                    break;
+                case RenderMode3D.Textured:
+                    if (Texture != null)
+                    {
+                        foreach (Triangle tri in triangles)
+                        {
+                            window.DrawTexturedTriangle(tri, Texture);
+                        }
+                    }
+                    else
+                    {
+                        Log.Warning(this, $"RenderMode is set to \"Textured\", but Texture is null");
+                    }
+                    break;
             }
         }
-
     }
 }

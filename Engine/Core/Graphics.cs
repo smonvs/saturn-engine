@@ -17,10 +17,10 @@ namespace SaturnEngine.Engine.Core
             Matrix4x4 matTrans = Matrix4x4.MakeTranslation(position.X, position.Y, position.Z);
 
             Matrix4x4 matWorld = Matrix4x4.Identity;
-            matWorld = matWorld * matRotZ;
-            matWorld = matWorld * matRotY;
-            matWorld = matWorld * matRotX;
-            matWorld = matWorld * matTrans;
+            matWorld *= matRotZ;
+            matWorld *= matRotY;
+            matWorld *= matRotX;
+            matWorld *= matTrans;
 
             return matWorld;
         }
@@ -34,9 +34,9 @@ namespace SaturnEngine.Engine.Core
             Matrix4x4 matRotX = Matrix4x4.MakeRotationX(rotationRadiants.X);
 
             Matrix4x4 matCamera = Matrix4x4.Identity;
-            matCamera = matCamera * matRotZ;
-            matCamera = matCamera * matRotY;
-            matCamera = matCamera * matRotX;
+            matCamera *= matRotZ;
+            matCamera *= matRotY;
+            matCamera *= matRotX;
 
             Vector3 lookDir = matCamera * new Vector3(0, 0, 1);
             Vector3 target = position + lookDir;
