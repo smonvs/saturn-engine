@@ -1,7 +1,5 @@
-﻿using Microsoft.VisualBasic;
-using SaturnEngine.Engine.Structs;
+﻿using SaturnEngine.Engine.Structs;
 using System.Runtime.InteropServices;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace SaturnEngine.Engine.Core
 {
@@ -107,6 +105,17 @@ namespace SaturnEngine.Engine.Core
             {
                 case WM_DESTROY:
                     Environment.Exit(0);
+                    break;
+                case WM_KEYDOWN:
+                    Input.KeyDown((KeyCode)wParam);
+                    break;
+                case WM_KEYUP:
+                    Input.KeyUp((KeyCode)wParam);
+                    break;
+                case WM_MOUSEMOVE:
+                    int x = lParam.ToInt32() & 0xFFFF;
+                    int y = lParam.ToInt32() >> 16;
+                    Input.MousePosition = new Vector2(x, y);
                     break;
             }
             return DefWindowProc(hwnd, uMsg, wParam, lParam);
@@ -596,6 +605,9 @@ namespace SaturnEngine.Engine.Core
         private const int WS_OVERLAPPEDWINDOW = 0x00CF0000;
         private const int CW_USEDEFAULT = unchecked((int)0x80000000);
         private const uint WM_DESTROY = 0x0002;
+        private const uint WM_MOUSEMOVE = 0x0200; 
+        private const uint WM_KEYDOWN = 0x0100;
+        private const uint WM_KEYUP = 0x0101;
         private const uint PM_REMOVE = 0x0001;
         private const int SW_SHOW = 5;  
         private const int SRCCOPY = 0x00CC0020;

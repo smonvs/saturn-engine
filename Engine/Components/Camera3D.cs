@@ -1,4 +1,5 @@
 ﻿using SaturnEngine.Engine.Core;
+using SaturnEngine.Engine.Structs;
 
 namespace SaturnEngine.Engine.Components
 {

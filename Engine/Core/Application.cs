@@ -84,7 +84,7 @@ namespace SaturnEngine.Engine.Core
 
                 _window.RenderDraw();
 
-                while(stopwatch.ElapsedMilliseconds < (1000 / 500)) { }
+                while(stopwatch.ElapsedMilliseconds < (1000 / 144)) { }
 
                 stopwatch.Stop();
                 deltaTime = stopwatch.ElapsedMilliseconds / 1000.0f;
