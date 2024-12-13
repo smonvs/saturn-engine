@@ -13,8 +13,8 @@ namespace SaturnEngine.Engine.Core
         public string Name { get; private set; }
 
         private EntityCollection _entities = new EntityCollection();
-        private List<Entity> _addedCache = new List<Entity>();
-        private List<Entity> _destroyedCache = new List<Entity>();
+        private EntityCollection _addedCache = new EntityCollection();
+        private EntityCollection _destroyedCache = new EntityCollection();
 
         public event OnEntityDestroyed OnEntityDestroyed;
         public event OnComponentAdded OnComponentAdded;
@@ -34,16 +34,32 @@ namespace SaturnEngine.Engine.Core
             }
         }
 
+        public Entity FindEntity(uint id)
+        {
+            if (_entities.Contains(id))
+            {
+                return _entities[id];
+            }
+            return null;
+        }
+
         private void AddEntityFromCache(Entity entity)
         {
-            _entities.Add(entity);
-            entity.OnAddedToScene(this);
-            entity.OnEntityDestroyed += OnEntityDestroyed;
-            entity.OnComponentAdded += OnComponentAdded;
-
-            foreach (ComponentBase component in entity.GetComponents())
+            if (!_entities.Contains(entity.Id))
             {
-                OnComponentAdded?.Invoke(entity, component);
+                _entities.Add(entity);
+                entity.OnAddedToScene(this);
+                entity.OnEntityDestroyed += OnEntityDestroyed;
+                entity.OnComponentAdded += OnComponentAdded;
+
+                foreach (ComponentBase component in entity.GetComponents())
+                {
+                    OnComponentAdded?.Invoke(entity, component);
+                }
+            }
+            else
+            {
+                Log.Error($"Scene \"{Name}\": Entity \"{entity.Name}\" ({entity.Id}) cannot be added. Reason: Id already used by another entity");
             }
         }
 

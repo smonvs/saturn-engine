@@ -6,15 +6,15 @@ using System.Threading.Tasks;
 
 namespace SaturnEngine.Engine.Core
 {
-    public class SceneManager
+    public static class SceneManager
     {
 
-        private Dictionary<string, Scene> _scenes = new Dictionary<string, Scene>();
+        private static Dictionary<string, Scene> _scenes = new Dictionary<string, Scene>();
 
-        public event OnEntityDestroyed OnEntityDestroyed;
-        public event OnComponentAdded OnComponentAdded;
+        public static event OnEntityDestroyed OnEntityDestroyed;
+        public static event OnComponentAdded OnComponentAdded;
 
-        public Scene CreateScene(string name)
+        internal static Scene CreateScene(string name)
         {
             Scene scene = new Scene(name);
             _scenes.Add(name, scene);
@@ -23,7 +23,7 @@ namespace SaturnEngine.Engine.Core
             return scene;
         }
 
-        public void UpdateScenes(float deltaTime)
+        internal static void UpdateScenes(float deltaTime)
         {
             foreach (Scene scene in _scenes.Values)
             {
@@ -31,14 +31,24 @@ namespace SaturnEngine.Engine.Core
             }
         }
 
-        public bool LoadScene(string filepath)
+        public static bool LoadScene(string filepath)
         {
-            return true;
+            Scene scene = ResourceLoader.LoadScene(filepath);
+            
+            if(scene != null)
+            {
+                _scenes[scene.Name] = scene;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
 
 
-        public bool UnloadScene(string name)
+        public static bool UnloadScene(string name)
         {
             return true;
         }

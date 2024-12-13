@@ -9,8 +9,9 @@ namespace SaturnEngine.Engine.Enums
     public enum RenderMode3D
     {
         Wireframe,
-        WireframeTextured,
         Solid,
-        Textured
+        SolidWithWireframe,
+        Textured,
+        TexturedWithWireframe
     }
 }

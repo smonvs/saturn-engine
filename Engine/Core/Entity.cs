@@ -44,14 +44,21 @@ namespace SaturnEngine.Engine.Core
 
         public static Entity Create(string name)
         {
+            return Create(_lastId++, name);
+        }
+
+        internal static Entity Create(uint id, string name)
+        { 
             Entity entity = new Entity();
             entity._isEnabled = true;
-            entity.Id = _lastId++;
+            entity.Id = id;
             entity.Name = name;
 
             Log.Info(entity, "Entity was created");
 
             entity.Transform = entity.AddComponent<Transform>();
+
+            _lastId = id;
 
             return entity;
         }

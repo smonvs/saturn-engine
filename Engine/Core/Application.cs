@@ -13,7 +13,6 @@ namespace SaturnEngine.Engine.Core
         public bool Running { get; set; }
 
         private Window _window;
-        private SceneManager _sceneManager;
 
         private Renderer3DSystem _renderer3DSystem;
 
@@ -21,7 +20,7 @@ namespace SaturnEngine.Engine.Core
 
         #region Events
 
-        public delegate void OnApplicationLoad(SceneManager sceneManager);
+        public delegate void OnApplicationLoad();
         public delegate void OnApplicationClose();
 
         public event OnApplicationLoad OnLoad;
@@ -45,9 +44,8 @@ namespace SaturnEngine.Engine.Core
         public Application(string title, int width, int height, float renderScale = 1.0f)
         {
             _window = new Window(this, title, width, height, renderScale);
-            _sceneManager = new SceneManager();
-            _sceneManager.OnEntityDestroyed += OnEntityDestroyed;
-            _sceneManager.OnComponentAdded += OnComponentAdded;
+            SceneManager.OnEntityDestroyed += OnEntityDestroyed;
+            SceneManager.OnComponentAdded += OnComponentAdded;
             
             // Hide Console window if not in debug mode
             #if DEBUG
@@ -60,14 +58,14 @@ namespace SaturnEngine.Engine.Core
         {
             Running = _window.Open();
 
-            OnLoad?.Invoke(_sceneManager);
-
             _renderer3DSystem = new Renderer3DSystem(_window);
 
             Stopwatch stopwatch = new Stopwatch();
             float deltaTime = 0.0f;
             float elapsedTime = 0.0f;
             int frameCount = 0;
+
+            OnLoad?.Invoke();
 
             while (Running)
             {
@@ -76,7 +74,7 @@ namespace SaturnEngine.Engine.Core
                 Input.Update();
                 _window.ProcessMessages();
 
-                _sceneManager.UpdateScenes(deltaTime);
+                SceneManager.UpdateScenes(deltaTime);
 
                 _window.RenderClear();
 

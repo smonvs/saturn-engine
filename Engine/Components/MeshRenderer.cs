@@ -12,7 +12,7 @@ namespace SaturnEngine.Engine.Components
 
         [Export] public RenderMode3D RenderMode { get; set; } = RenderMode3D.Solid;
         [Export] public Mesh Mesh { get; set; }
-        [Export] public Texture Texture { get { return _texture; } set { _texture = value; RenderMode = RenderMode3D.Textured; } }
+        [Export] public Texture Texture { get { return _texture; } set { _texture = value; if (value != null) RenderMode = RenderMode3D.Textured; } }
 
         private Texture _texture;
 
@@ -21,6 +21,27 @@ namespace SaturnEngine.Engine.Components
             Transform.RotateX(-30.0f * deltaTime);
             Transform.RotateY(100.0f * -deltaTime);
             Transform.RotateZ(50.0f * deltaTime);
+
+            if (Input.IsKeyJustPressed(KeyCode.F1))
+            {
+                Texture = null;
+                RenderMode = RenderMode3D.SolidWithWireframe;
+            }
+            else if (Input.IsKeyJustPressed(KeyCode.F2))
+            {
+                Texture = this.LoadResource<Texture>("C:/Users/simon/Downloads/cube1.png");
+                RenderMode = RenderMode3D.TexturedWithWireframe;
+            }
+            else if (Input.IsKeyJustPressed(KeyCode.F3))
+            {
+                Texture = this.LoadResource<Texture>("C:/Users/simon/Downloads/cube2.png");
+                RenderMode = RenderMode3D.TexturedWithWireframe;
+            }
+            else if (Input.IsKeyJustPressed(KeyCode.F4))
+            {
+                Texture = this.LoadResource<Texture>("C:/Users/simon/Downloads/cube3.png");
+                RenderMode = RenderMode3D.TexturedWithWireframe;
+            }
         }
 
         internal override void OnRender(Window window, Matrix4x4 matProj, Camera3D camera)
@@ -38,7 +59,36 @@ namespace SaturnEngine.Engine.Components
                         window.DrawTriangle(tri, Color.Orange);
                     }
                     break;
-                case RenderMode3D.WireframeTextured:
+                case RenderMode3D.Solid:
+                    foreach (Triangle tri in triangles)
+                    {
+                        window.DrawFilledTriangle(tri);
+                    }
+                    break;
+                case RenderMode3D.SolidWithWireframe:
+                    foreach (Triangle tri in triangles)
+                    {
+                        window.DrawFilledTriangle(tri);
+                    }
+                    foreach (Triangle tri in triangles)
+                    {
+                        window.DrawTriangle(tri, Color.Orange);
+                    }
+                    break;
+                case RenderMode3D.Textured:
+                    if (Texture != null)
+                    {
+                        foreach (Triangle tri in triangles)
+                        {
+                            window.DrawTexturedTriangle(tri, Texture);
+                        }
+                    }
+                    else
+                    {
+                        Log.Warning(this, $"RenderMode is set to \"Textured\", but Texture is null");
+                    }
+                    break;
+                case RenderMode3D.TexturedWithWireframe:
                     if (Texture != null)
                     {
                         foreach (Triangle tri in triangles)
@@ -53,25 +103,6 @@ namespace SaturnEngine.Engine.Components
                     else
                     {
                         Log.Warning(this, $"RenderMode is set to \"WireframeTextured\", but Texture is null");
-                    }
-                    break;
-                case RenderMode3D.Solid:
-                    foreach (Triangle tri in triangles)
-                    {
-                        window.DrawFilledTriangle(tri);
-                    }
-                    break;
-                case RenderMode3D.Textured:
-                    if (Texture != null)
-                    {
-                        foreach (Triangle tri in triangles)
-                        {
-                            window.DrawTexturedTriangle(tri, Texture);
-                        }
-                    }
-                    else
-                    {
-                        Log.Warning(this, $"RenderMode is set to \"Textured\", but Texture is null");
                     }
                     break;
             }
