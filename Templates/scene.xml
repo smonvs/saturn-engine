@@ -1,0 +1,12 @@
+<Scene name="{sceneName}">
+	<Resources>
+		<Resource id="{sequentialId}">{path}</Resource>
+	</Resources>
+	<Entities>
+		<Entity id="{entityId}" name="{entityName}" parent="{parentEntityId}" isEnabled="{bool}">
+			<Component type="{componentType}" isEnabled="{bool}">
+				<Property name="{propertyName}">{propertyName}</Property> <!-- Properties can be nested! -->
+			</Component>
+		</Entity>
+	</Entities>
+</Scene>
